@@ -80,7 +80,7 @@ public class CanserveDuo extends javax.swing.JFrame {
         jLabelSubtitle.setBounds(10, 60, 459, 29);
 
         jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/canteenreserve/Untitled (300 x 300 px) (50 x 50 px) (2).png"))); // NOI18N
-        jLabel3.setText("jLabel3");
+        jLabel3.setText("");
         jPanel1.add(jLabel3);
         jLabel3.setBounds(421, 24, 59, 48);
 
@@ -374,11 +374,6 @@ public class CanserveDuo extends javax.swing.JFrame {
         jComboBoxFood.setSelectedIndex(0);
         jComboBoxTime.setSelectedIndex(0);
         jLabelMessage.setText("");
-        }
-
-        public static void main(String[] args) {
-            java.awt.EventQueue.invokeLater(() -> new Sajulga_CanteenReserve().setVisible(true));
-        }
     }//GEN-LAST:event_jButtonClearActionPerformed
 
     /**

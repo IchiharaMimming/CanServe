@@ -26,18 +26,6 @@ import java.awt.Color;
     public class Sajulga_CanteenReserve extends javax.swing.JFrame {
         private DefaultTableModel model;
         
-        private JButton jButtonClear, jButtonReserve1;
-        private JComboBox<String> jComboBoxFood, jComboBoxTime;
-        private JDialog jDialog1;
-        private JLabel jLabel3, jLabelMessage, jLabelQuantity, jLabelSelectFood,
-            jLabelSubtitle, jLabelSubtitle1, jLabelSubtitle2, jLabelSubtitle3, jLabelSubtitle4, jLabelTime, jLabelTitle;
-        private JPanel jPanel1, jPanel2, jPanel3, jPanelActions, jPanelFoodMenuText,
-            jPanelFoodTable, jPanelHeader, jPanelReservation;
-        private JScrollPane jScrollPane1;
-        private JSpinner jSpinnerQuantity;
-        private JTable jTableFoodMenu;
-        private JMenuItem jMenuItem1;
-
     public Sajulga_CanteenReserve() {
         initComponents();
 
@@ -298,7 +286,7 @@ import java.awt.Color;
         jLabelTime.setText("Reserve Until");
 
         jComboBoxTime.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-        jComboBoxTime.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "9:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", " " }));
+        jComboBoxTime.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "9:30 AM", "10:00 AM", "10:30 AM", "11:00 AM" }));
 
         jSpinnerQuantity.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         jSpinnerQuantity.setModel(new javax.swing.SpinnerNumberModel(1, 1, 32, 1));
@@ -438,19 +426,18 @@ import java.awt.Color;
             return;
         }
     }
-}
-    
+    }
+
     private void jButtonClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonClearActionPerformed
         jSpinnerQuantity.setValue(1);
         jComboBoxFood.setSelectedIndex(0);
         jComboBoxTime.setSelectedIndex(0);
         jLabelMessage.setText("");
-    }
-    
+    }//GEN-LAST:event_jButtonClearActionPerformed
+
     public static void main(String[] args) {
         java.awt.EventQueue.invokeLater(() -> new Sajulga_CanteenReserve().setVisible(true));
     }
-    }//GEN-LAST:event_jButtonClearActionPerformed
 
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -483,3 +470,4 @@ import java.awt.Color;
     private javax.swing.JSpinner jSpinnerQuantity;
     private javax.swing.JTable jTableFoodMenu;
     // End of variables declaration//GEN-END:variables
+}
