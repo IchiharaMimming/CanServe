@@ -5,46 +5,62 @@
 package canteenreserve;
 
 /**
+ * Main CanteenReserve Duo window.
+ * Displays menu items and lets the user reserve food until a selected time.
  *
  * @author Honey
  */
-
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.table.DefaultTableModel;
+import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.util.ArrayList;
 import java.util.List;
 
-    /**
-     * Main canteen reservation window.
-     * Displays menu items and lets the user reserve food until a selected time.
-     */
-    public class Sajulga_CanteenReserve extends javax.swing.JFrame {
+public class CanteenReserveDuo extends javax.swing.JFrame {
 
-        private static final int COLUMN_QUANTITY = 2;
-        private static final int COLUMN_STATUS = 3;
+    private static final int COLUMN_QUANTITY = 2;
+    private static final int COLUMN_STATUS = 3;
+    private static final int MAX_PER_RESERVATION = 10;
+    private static final int HIGH_TOTAL_WARNING = 200;
+    private static final int LOW_STOCK_THRESHOLD = 3;
 
-        private DefaultTableModel model;
-        private List<FoodItem> foodItems;
+    private DefaultTableModel model;
+    private DefaultTableModel reservationSummaryModel;
+    private List<FoodItem> foodItems;
 
-    public Sajulga_CanteenReserve() {
+    private JTable reservationsTable;
+    private JButton cancelReservationButton;
+    private JButton cancelAllReservationButton;
+    private JLabel overallTotalLabel;
+
+    public CanteenReserveDuo() {
         initComponents();
 
         initializeFoodItems();
+        populateFoodComboBox();
         setupTable();
+        initializeReservationSummary();
         setupActions();
+        createMenuBar();
         customizeUi();
     }
+
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -95,6 +111,7 @@ import java.util.List;
         jLabelSubtitle3.setText("Check and reserve available food");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("CanteenReserve Duo");
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jPanelHeader.setBackground(new java.awt.Color(84, 119, 146));
@@ -105,7 +122,7 @@ import java.util.List;
         jLabelTitle.setBackground(new java.awt.Color(92, 64, 51));
         jLabelTitle.setFont(new java.awt.Font("Ravie", 1, 36)); // NOI18N
         jLabelTitle.setForeground(new java.awt.Color(251, 251, 219));
-        jLabelTitle.setText("CanteenReserve");
+        jLabelTitle.setText("CanteenReserve Duo");
         jLabelTitle.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
         jLabelTitle.setMaximumSize(new java.awt.Dimension(406, 40));
         jLabelTitle.setMinimumSize(new java.awt.Dimension(406, 40));
@@ -118,7 +135,7 @@ import java.util.List;
         jLabelSubtitle.setForeground(new java.awt.Color(119, 97, 72));
         jLabelSubtitle.setText("Check and reserve available food");
         jPanel1.add(jLabelSubtitle);
-        jLabelSubtitle.setBounds(10, 60, 459, 29);
+        jLabelSubtitle.setBounds(10, 60, 459, 28);
 
         jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/canteenreserve/Untitled (300 x 300 px) (50 x 50 px) (2).png"))); // NOI18N
         jLabel3.setText("jLabel3");
@@ -229,6 +246,7 @@ import java.util.List;
 
         jLabelMessage.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         jLabelMessage.setForeground(new java.awt.Color(92, 64, 51));
+        jLabelMessage.setText("Ready to reserve your order...");
 
         jLabelSubtitle4.setFont(new java.awt.Font("Tahoma", 1, 20)); // NOI18N
         jLabelSubtitle4.setForeground(new java.awt.Color(85, 85, 85));
@@ -299,7 +317,7 @@ import java.util.List;
         jLabelTime.setText("Reserve Until");
 
         jComboBoxTime.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-        jComboBoxTime.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "9:30 AM", "10:00 AM", "10:30 AM", "11:00 AM" }));
+        jComboBoxTime.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "9:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", " " }));
 
         jSpinnerQuantity.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         jSpinnerQuantity.setModel(new javax.swing.SpinnerNumberModel(1, 1, 32, 1));
@@ -388,13 +406,33 @@ import java.util.List;
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    
     private void initializeFoodItems() {
         foodItems = new ArrayList<>();
         foodItems.add(new FoodItem("Pizza", 50, 10));
         foodItems.add(new FoodItem("Siomai", 25, 15));
         foodItems.add(new FoodItem("Lumpia", 20, 12));
         foodItems.add(new FoodItem("Chicken", 60, 8));
+        foodItems.add(new FoodItem("Tapsilog", 75, 12));
+        foodItems.add(new FoodItem("Longsilog", 65, 12));
+        foodItems.add(new FoodItem("Tocilog", 60, 12));
+        foodItems.add(new FoodItem("Adobo", 55, 15));
+        foodItems.add(new FoodItem("Sinigang", 70, 10));
+        foodItems.add(new FoodItem("Kare-kare", 95, 8));
+        foodItems.add(new FoodItem("Porkchop", 75, 10));
+        foodItems.add(new FoodItem("Bangus", 80, 8));
+        foodItems.add(new FoodItem("Fried Tilapia", 65, 10));
+        foodItems.add(new FoodItem("Pancit", 45, 15));
+        foodItems.add(new FoodItem("Giniling", 50, 12));
+        foodItems.add(new FoodItem("Menudo", 55, 12));
+        foodItems.add(new FoodItem("Rice", 15, 30));
+    }
+
+    private void populateFoodComboBox() {
+        if (foodItems == null || jComboBoxFood == null) return;
+        String[] names = foodItems.stream()
+                .map(item -> item.name)
+                .toArray(String[]::new);
+        jComboBoxFood.setModel(new javax.swing.DefaultComboBoxModel<>(names));
     }
 
     private void setupTable() {
@@ -402,15 +440,73 @@ import java.util.List;
 
         model.setRowCount(0);
         for (FoodItem item : foodItems) {
-            String status = item.quantity > 0 ? "Available" : "Out of Stock";
+            String status = statusForQuantity(item.quantity);
             model.addRow(new Object[] { item.name, String.valueOf(item.price), item.quantity, status });
         }
 
         jTableFoodMenu.setRowHeight(25);
     }
 
+    private static String statusForQuantity(int quantity) {
+        if (quantity <= 0) return "Out of Stock";
+        if (quantity <= LOW_STOCK_THRESHOLD) return "Low stock";
+        return "Available";
+    }
+
+    private void recalculateOverallTotal() {
+        if (overallTotalLabel == null || reservationSummaryModel == null) return;
+        int total = 0;
+        for (int row = 0; row < reservationSummaryModel.getRowCount(); row++) {
+            Object totalObj = reservationSummaryModel.getValueAt(row, 3);
+            if (totalObj != null) {
+                String totalStr = totalObj.toString().trim();
+                if (totalStr.startsWith("₱")) totalStr = totalStr.substring(1).trim();
+                try {
+                    total += Integer.parseInt(totalStr);
+                } catch (NumberFormatException ignored) { }
+            }
+        }
+        overallTotalLabel.setText("Total Reserved Amount: ₱" + total);
+    }
+
     private void setupActions() {
         jButtonReserve1.addActionListener(e -> reserveFood());
+        // Clear button is already wired via designer to jButtonClearActionPerformed
+        // Reset actions and summary table are initialized in initializeReservationSummary.
+    }
+
+    private void createMenuBar() {
+        JMenuBar menuBar = new JMenuBar();
+
+        JMenu menuFile = new JMenu("File");
+        JMenuItem resetInventoryItem = new JMenuItem("Reset Inventory");
+        resetInventoryItem.addActionListener(e -> resetInventory());
+        JMenuItem exitItem = new JMenuItem("Exit");
+        exitItem.addActionListener(e -> System.exit(0));
+        menuFile.add(resetInventoryItem);
+        menuFile.addSeparator();
+        menuFile.add(exitItem);
+
+        JMenu menuView = new JMenu("View");
+        JMenuItem summaryItem = new JMenuItem("Reservation Summary");
+        summaryItem.addActionListener(e -> showReservationSummaryDialog());
+        menuView.add(summaryItem);
+
+        JMenu menuHelp = new JMenu("Help");
+        JMenuItem aboutItem = new JMenuItem("About");
+        aboutItem.addActionListener(e -> showAboutDialog());
+        menuHelp.add(aboutItem);
+
+        menuBar.add(menuFile);
+        menuBar.add(menuView);
+        menuBar.add(menuHelp);
+
+        setJMenuBar(menuBar);
+    }
+
+    private void initializeReservationSummary() {
+        reservationSummaryModel = new DefaultTableModel(
+                new Object[] { "Food", "Qty", "Time", "Total" }, 0);
     }
 
     private void reserveFood() {
@@ -432,6 +528,19 @@ import java.util.List;
             return;
         }
 
+        if (requestedQuantity > MAX_PER_RESERVATION) {
+            int choice = JOptionPane.showConfirmDialog(this,
+                    "You\u2019re reserving more than " + MAX_PER_RESERVATION + " of this item. Are you sure?",
+                    "Large quantity",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE);
+            if (choice != JOptionPane.YES_OPTION) {
+                jLabelMessage.setForeground(new Color(85, 85, 85));
+                jLabelMessage.setText("Reservation cancelled.");
+                return;
+            }
+        }
+
         String time = selectedTimeObject.toString();
 
         for (int rowIndex = 0; rowIndex < foodItems.size(); rowIndex++) {
@@ -447,14 +556,41 @@ import java.util.List;
                 if (requestedQuantity <= item.quantity) {
                     item.quantity -= requestedQuantity;
                     model.setValueAt(item.quantity, rowIndex, COLUMN_QUANTITY);
+                    model.setValueAt(statusForQuantity(item.quantity), rowIndex, COLUMN_STATUS);
 
-                    if (item.quantity == 0) {
-                        model.setValueAt("Out of Stock", rowIndex, COLUMN_STATUS);
+                    int totalPrice = item.price * requestedQuantity;
+
+                    if (reservationSummaryModel != null) {
+                        reservationSummaryModel.addRow(
+                                new Object[] { selectedFood, requestedQuantity, time, "₱" + totalPrice });
+                    }
+
+                    recalculateOverallTotal();
+                    jSpinnerQuantity.setValue(1);
+
+                    StringBuilder message = new StringBuilder();
+                    message.append("Reserved ")
+                            .append(requestedQuantity)
+                            .append(" ")
+                            .append(selectedFood)
+                            .append(" until ")
+                            .append(time)
+                            .append(". Total: ₱")
+                            .append(totalPrice)
+                            .append(". Remaining: ")
+                            .append(item.quantity)
+                            .append(".");
+
+                    if (totalPrice > HIGH_TOTAL_WARNING) {
+                        message.append(" (Large order!)");
+                    }
+
+                    if (item.quantity > 0 && item.quantity <= LOW_STOCK_THRESHOLD) {
+                        message.append(" Low stock: only ").append(item.quantity).append(" left.");
                     }
 
                     jLabelMessage.setForeground(Color.GREEN);
-                    jLabelMessage.setText("Reserved " + requestedQuantity + " " + selectedFood + " until " + time
-                            + ". Remaining: " + item.quantity + ".");
+                    jLabelMessage.setText(message.toString());
                 } else {
                     jLabelMessage.setForeground(Color.RED);
                     jLabelMessage.setText("Not enough stock: requested " + requestedQuantity + ", available "
@@ -469,6 +605,135 @@ import java.util.List;
         jLabelMessage.setText("Selected food not found.");
     }
 
+    private void resetInventory() {
+        initializeFoodItems();
+        setupTable();
+        if (reservationSummaryModel != null) {
+            reservationSummaryModel.setRowCount(0);
+        }
+        recalculateOverallTotal();
+        jLabelMessage.setForeground(new Color(85, 85, 85));
+        jLabelMessage.setText("Inventory reset. Ready to reserve your order...");
+    }
+
+    private void showReservationSummaryDialog() {
+        if (reservationSummaryModel == null || reservationSummaryModel.getRowCount() == 0) {
+            JOptionPane.showMessageDialog(this,
+                    "No reservations have been made yet.",
+                    "Reservation Summary",
+                    JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        JTable summaryTable = new JTable(reservationSummaryModel);
+        summaryTable.setEnabled(false);
+
+        JScrollPane scrollPane = new JScrollPane(summaryTable);
+        scrollPane.setPreferredSize(new Dimension(420, 200));
+
+        JOptionPane.showMessageDialog(this,
+                scrollPane,
+                "Reservation Summary",
+                JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void showAboutDialog() {
+        JOptionPane.showMessageDialog(this,
+                "CanteenReserve Duo\nReserve canteen food in advance.\nCreated by Honey & partner.",
+                "About CanteenReserve Duo",
+                JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void cancelSelectedReservation() {
+        if (reservationsTable == null || reservationSummaryModel == null) {
+            jLabelMessage.setForeground(Color.RED);
+            jLabelMessage.setText("Reservation list is not available.");
+            return;
+        }
+
+        int selectedRow = reservationsTable.getSelectedRow();
+        if (selectedRow == -1) {
+            jLabelMessage.setForeground(Color.RED);
+            jLabelMessage.setText("Select a reservation to cancel.");
+            return;
+        }
+
+        String foodName = reservationSummaryModel.getValueAt(selectedRow, 0).toString();
+        int quantity = Integer.parseInt(reservationSummaryModel.getValueAt(selectedRow, 1).toString());
+        String time = reservationSummaryModel.getValueAt(selectedRow, 2).toString();
+
+        FoodItem matchedItem = null;
+        for (FoodItem item : foodItems) {
+            if (item.name.equals(foodName)) {
+                matchedItem = item;
+                break;
+            }
+        }
+
+        if (matchedItem == null) {
+            jLabelMessage.setForeground(Color.RED);
+            jLabelMessage.setText("Unable to find menu item for cancellation.");
+            return;
+        }
+
+        matchedItem.quantity += quantity;
+
+        for (int rowIndex = 0; rowIndex < model.getRowCount(); rowIndex++) {
+            Object value = model.getValueAt(rowIndex, 0);
+            if (value != null && value.toString().equals(foodName)) {
+                model.setValueAt(matchedItem.quantity, rowIndex, COLUMN_QUANTITY);
+                model.setValueAt(statusForQuantity(matchedItem.quantity), rowIndex, COLUMN_STATUS);
+                break;
+            }
+        }
+
+        reservationSummaryModel.removeRow(selectedRow);
+        recalculateOverallTotal();
+
+        jLabelMessage.setForeground(new Color(85, 85, 85));
+        jLabelMessage.setText("Cancelled reservation: " + quantity + " " + foodName + " at " + time
+                + ". Stock restored.");
+    }
+
+    private void cancelAllReservations() {
+        if (reservationSummaryModel == null || reservationSummaryModel.getRowCount() == 0) {
+            jLabelMessage.setForeground(new Color(85, 85, 85));
+            jLabelMessage.setText("No reservations to cancel.");
+            return;
+        }
+
+        int rowCount = reservationSummaryModel.getRowCount();
+        for (int row = rowCount - 1; row >= 0; row--) {
+            String foodName = reservationSummaryModel.getValueAt(row, 0).toString();
+            int quantity = Integer.parseInt(reservationSummaryModel.getValueAt(row, 1).toString());
+
+            for (FoodItem item : foodItems) {
+                if (item.name.equals(foodName)) {
+                    item.quantity += quantity;
+                    break;
+                }
+            }
+        }
+
+        for (int rowIndex = 0; rowIndex < model.getRowCount(); rowIndex++) {
+            Object nameObj = model.getValueAt(rowIndex, 0);
+            if (nameObj == null) continue;
+            String foodName = nameObj.toString();
+            for (FoodItem item : foodItems) {
+                if (item.name.equals(foodName)) {
+                    model.setValueAt(item.quantity, rowIndex, COLUMN_QUANTITY);
+                    model.setValueAt(statusForQuantity(item.quantity), rowIndex, COLUMN_STATUS);
+                    break;
+                }
+            }
+        }
+
+        reservationSummaryModel.setRowCount(0);
+        recalculateOverallTotal();
+        jLabelMessage.setForeground(new Color(85, 85, 85));
+        jLabelMessage.setText("All reservations cancelled and stock restored.");
+    }
+
     private void jButtonClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonClearActionPerformed
         jSpinnerQuantity.setValue(1);
         jComboBoxFood.setSelectedIndex(0);
@@ -477,7 +742,7 @@ import java.util.List;
     }//GEN-LAST:event_jButtonClearActionPerformed
 
     public static void main(String[] args) {
-        java.awt.EventQueue.invokeLater(() -> new Sajulga_CanteenReserve().setVisible(true));
+        java.awt.EventQueue.invokeLater(() -> new CanteenReserveDuo().setVisible(true));
     }
 
     private void customizeUi() {
@@ -485,6 +750,58 @@ import java.util.List;
         jLabelMessage.setForeground(new java.awt.Color(85, 85, 85));
         jButtonReserve1.setFocusPainted(false);
         jButtonClear.setFocusPainted(false);
+        jTableFoodMenu.setFillsViewportHeight(true);
+        jPanelReservation.setBorder(javax.swing.BorderFactory.createEmptyBorder(16, 16, 16, 16));
+
+        reservationsTable = new JTable(reservationSummaryModel);
+        reservationsTable.setEnabled(true);
+
+        JScrollPane reservationsScrollPane = new JScrollPane(reservationsTable);
+        reservationsScrollPane.setPreferredSize(new Dimension(420, 160));
+
+        JLabel reservationsTitle = new JLabel("Today's Reservations");
+        reservationsTitle.setFont(new java.awt.Font("Tahoma", java.awt.Font.BOLD, 14));
+        reservationsTitle.setForeground(new Color(251, 251, 219));
+
+        cancelReservationButton = new JButton("Cancel Selected");
+        cancelReservationButton.addActionListener(e -> cancelSelectedReservation());
+        cancelReservationButton.setFocusPainted(false);
+
+        cancelAllReservationButton = new JButton("Cancel All");
+        cancelAllReservationButton.addActionListener(e -> cancelAllReservations());
+        cancelAllReservationButton.setFocusPainted(false);
+
+        JPanel reservationButtonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 4));
+        reservationButtonsPanel.setOpaque(false);
+        reservationButtonsPanel.add(cancelReservationButton);
+        reservationButtonsPanel.add(cancelAllReservationButton);
+
+        overallTotalLabel = new JLabel("Total Reserved Amount: ₱0");
+        overallTotalLabel.setFont(new java.awt.Font("Tahoma", java.awt.Font.BOLD, 12));
+        overallTotalLabel.setForeground(new Color(251, 251, 219));
+
+        JPanel southPanel = new JPanel(new BorderLayout(0, 4));
+        southPanel.setOpaque(false);
+        southPanel.add(reservationButtonsPanel, BorderLayout.NORTH);
+        southPanel.add(overallTotalLabel, BorderLayout.CENTER);
+
+        JPanel reservationsPanel = new JPanel(new BorderLayout(0, 4));
+        reservationsPanel.setOpaque(false);
+        reservationsPanel.add(reservationsTitle, BorderLayout.NORTH);
+        reservationsPanel.add(reservationsScrollPane, BorderLayout.CENTER);
+        reservationsPanel.add(southPanel, BorderLayout.SOUTH);
+
+        JPanel messagePanel = new JPanel(new BorderLayout());
+        messagePanel.setOpaque(false);
+        messagePanel.add(jPanel2, BorderLayout.NORTH);
+        messagePanel.add(jLabelMessage, BorderLayout.SOUTH);
+
+        jPanelActions.removeAll();
+        jPanelActions.setLayout(new BorderLayout(0, 8));
+        jPanelActions.add(messagePanel, BorderLayout.NORTH);
+        jPanelActions.add(reservationsPanel, BorderLayout.CENTER);
+        jPanelActions.revalidate();
+        jPanelActions.repaint();
     }
 
     private static class FoodItem {
@@ -499,7 +816,6 @@ import java.util.List;
         }
     }
 
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButtonClear;
     private javax.swing.JButton jButtonReserve1;
@@ -531,3 +847,4 @@ import java.util.List;
     private javax.swing.JTable jTableFoodMenu;
     // End of variables declaration//GEN-END:variables
 }
+
