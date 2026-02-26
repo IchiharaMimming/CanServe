@@ -22,15 +22,28 @@ import javax.swing.JTable;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.table.DefaultTableModel;
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
 
+    /**
+     * Main canteen reservation window.
+     * Displays menu items and lets the user reserve food until a selected time.
+     */
     public class Sajulga_CanteenReserve extends javax.swing.JFrame {
+
+        private static final int COLUMN_QUANTITY = 2;
+        private static final int COLUMN_STATUS = 3;
+
         private DefaultTableModel model;
-        
+        private List<FoodItem> foodItems;
+
     public Sajulga_CanteenReserve() {
         initComponents();
 
+        initializeFoodItems();
         setupTable();
         setupActions();
+        customizeUi();
     }
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -376,56 +389,84 @@ import java.awt.Color;
     }// </editor-fold>//GEN-END:initComponents
 
     
+    private void initializeFoodItems() {
+        foodItems = new ArrayList<>();
+        foodItems.add(new FoodItem("Pizza", 50, 10));
+        foodItems.add(new FoodItem("Siomai", 25, 15));
+        foodItems.add(new FoodItem("Lumpia", 20, 12));
+        foodItems.add(new FoodItem("Chicken", 60, 8));
+    }
+
     private void setupTable() {
+        model = (DefaultTableModel) jTableFoodMenu.getModel();
 
-    model = (DefaultTableModel) jTableFoodMenu.getModel();
+        model.setRowCount(0);
+        for (FoodItem item : foodItems) {
+            String status = item.quantity > 0 ? "Available" : "Out of Stock";
+            model.addRow(new Object[] { item.name, String.valueOf(item.price), item.quantity, status });
+        }
 
-    model.setRowCount(0);
+        jTableFoodMenu.setRowHeight(25);
+    }
 
-    model.addRow(new Object[]{"Pizza", "50", 10, "Available"});
-    model.addRow(new Object[]{"Siomai", "25", 15, "Available"});
-    model.addRow(new Object[]{"Lumpia", "20", 12, "Available"});
-    model.addRow(new Object[]{"Chicken", "60", 8, "Available"});
-
-    jTableFoodMenu.setRowHeight(25);
-}
     private void setupActions() {
+        jButtonReserve1.addActionListener(e -> reserveFood());
+    }
 
-    jButtonReserve1.addActionListener(e -> reserveFood());
-}
     private void reserveFood() {
+        Object selectedFoodObject = jComboBoxFood.getSelectedItem();
+        Object selectedTimeObject = jComboBoxTime.getSelectedItem();
 
-    String selectedFood = jComboBoxFood.getSelectedItem().toString();
-    int qty = Integer.parseInt(jSpinnerQuantity.getValue().toString());
-    String time = jComboBoxTime.getSelectedItem().toString();
-
-    for (int i = 0; i < model.getRowCount(); i++) {
-
-        String food = model.getValueAt(i, 0).toString();
-        int available = Integer.parseInt(model.getValueAt(i, 2).toString());
-
-        if (food.equals(selectedFood)) {
-
-            if (qty <= available) {
-
-                int newQty = available - qty;
-                model.setValueAt(newQty, i, 2);
-
-                if (newQty == 0) {
-                    model.setValueAt("Out of Stock", i, 3);
-                }
-
-                jLabelMessage.setForeground(Color.GREEN);
-                jLabelMessage.setText("Reserved " + qty + " " + food + " until " + time);
-
-            } else {
-                jLabelMessage.setForeground(Color.RED);
-                jLabelMessage.setText("Not enough stock!");
-            }
-
+        if (selectedFoodObject == null || selectedTimeObject == null) {
+            jLabelMessage.setForeground(Color.RED);
+            jLabelMessage.setText("Please select a food item and time.");
             return;
         }
-    }
+
+        String selectedFood = selectedFoodObject.toString();
+        int requestedQuantity = ((Number) jSpinnerQuantity.getValue()).intValue();
+
+        if (requestedQuantity <= 0) {
+            jLabelMessage.setForeground(Color.RED);
+            jLabelMessage.setText("Quantity must be at least 1.");
+            return;
+        }
+
+        String time = selectedTimeObject.toString();
+
+        for (int rowIndex = 0; rowIndex < foodItems.size(); rowIndex++) {
+            FoodItem item = foodItems.get(rowIndex);
+
+            if (item.name.equals(selectedFood)) {
+                if (item.quantity <= 0) {
+                    jLabelMessage.setForeground(Color.RED);
+                    jLabelMessage.setText(selectedFood + " is out of stock.");
+                    return;
+                }
+
+                if (requestedQuantity <= item.quantity) {
+                    item.quantity -= requestedQuantity;
+                    model.setValueAt(item.quantity, rowIndex, COLUMN_QUANTITY);
+
+                    if (item.quantity == 0) {
+                        model.setValueAt("Out of Stock", rowIndex, COLUMN_STATUS);
+                    }
+
+                    jLabelMessage.setForeground(Color.GREEN);
+                    jLabelMessage.setText("Reserved " + requestedQuantity + " " + selectedFood + " until " + time
+                            + ". Remaining: " + item.quantity + ".");
+                } else {
+                    jLabelMessage.setForeground(Color.RED);
+                    jLabelMessage.setText("Not enough stock: requested " + requestedQuantity + ", available "
+                            + item.quantity + ".");
+                }
+
+                return;
+            }
+        }
+
+        jLabelMessage.setForeground(Color.RED);
+        jLabelMessage.setText("Selected food not found.");
     }
 
     private void jButtonClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonClearActionPerformed
@@ -437,6 +478,25 @@ import java.awt.Color;
 
     public static void main(String[] args) {
         java.awt.EventQueue.invokeLater(() -> new Sajulga_CanteenReserve().setVisible(true));
+    }
+
+    private void customizeUi() {
+        jLabelMessage.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabelMessage.setForeground(new java.awt.Color(85, 85, 85));
+        jButtonReserve1.setFocusPainted(false);
+        jButtonClear.setFocusPainted(false);
+    }
+
+    private static class FoodItem {
+        private final String name;
+        private final int price;
+        private int quantity;
+
+        private FoodItem(String name, int price, int quantity) {
+            this.name = name;
+            this.price = price;
+            this.quantity = quantity;
+        }
     }
 
     
